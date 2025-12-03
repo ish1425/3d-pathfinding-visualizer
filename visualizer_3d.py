@@ -233,15 +233,17 @@ class Pathfinding3DVisualizer:
         else:
             pygame.draw.polygon(self.screen, (255, 255, 255), corners)
         
-        for col in range(self.cols + 1):
-            p1 = self.cart_to_iso(col, 0, 0)
-            p2 = self.cart_to_iso(col, self.rows, 0)
-            pygame.draw.line(self.screen, (100, 100, 100), p1, p2, 1)
-        
-        for row in range(self.rows + 1):
-            p1 = self.cart_to_iso(0, row, 0)
-            p2 = self.cart_to_iso(self.cols, row, 0)
-            pygame.draw.line(self.screen, (100, 100, 100), p1, p2, 1)
+        # Only draw grid lines if OSM map is not loaded
+        if not self.osm_loaded:
+            for col in range(self.cols + 1):
+                p1 = self.cart_to_iso(col, 0, 0)
+                p2 = self.cart_to_iso(col, self.rows, 0)
+                pygame.draw.line(self.screen, (100, 100, 100), p1, p2, 1)
+            
+            for row in range(self.rows + 1):
+                p1 = self.cart_to_iso(0, row, 0)
+                p2 = self.cart_to_iso(self.cols, row, 0)
+                pygame.draw.line(self.screen, (100, 100, 100), p1, p2, 1)
     
     def draw_3d_grid(self):
         self.draw_ground_plane()
@@ -258,15 +260,17 @@ class Pathfinding3DVisualizer:
                 pygame.draw.polygon(s, (*self.CYAN, 200), corners)
             self.screen.blit(s, (0, 0))
 
-        for col in range(self.cols + 1):
-            p1 = self.cart_to_iso(col, 0, 0)
-            p2 = self.cart_to_iso(col, self.rows, 0)
-            pygame.draw.line(self.screen, (100, 100, 100), p1, p2, 1)
-        
-        for row in range(self.rows + 1):
-            p1 = self.cart_to_iso(0, row, 0)
-            p2 = self.cart_to_iso(self.cols, row, 0)
-            pygame.draw.line(self.screen, (100, 100, 100), p1, p2, 1)
+        # Only draw grid lines if OSM map is not loaded
+        if not self.osm_loaded:
+            for col in range(self.cols + 1):
+                p1 = self.cart_to_iso(col, 0, 0)
+                p2 = self.cart_to_iso(col, self.rows, 0)
+                pygame.draw.line(self.screen, (100, 100, 100), p1, p2, 1)
+            
+            for row in range(self.rows + 1):
+                p1 = self.cart_to_iso(0, row, 0)
+                p2 = self.cart_to_iso(self.cols, row, 0)
+                pygame.draw.line(self.screen, (100, 100, 100), p1, p2, 1)
         
         path_points = []
         
