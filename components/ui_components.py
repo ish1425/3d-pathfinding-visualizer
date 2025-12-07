@@ -238,59 +238,99 @@ class ButtonManager:
         self._create_buttons(location_names)
     
     def _create_buttons(self, location_names):
-        button_width = 120
-        button_height = 35
+        button_width = 160
+        button_height = 40
+        start_x = self.width - button_width - 30 - (4 * 40)  
+        start_y = 30 + (3 * 40)  
+        spacing_y = 50
+        section_spacing = 25
         
-        # Position buttons in 2 rows on the right side
-        row1_y = 110
-        row2_y = 155
-        
-        spacing = 135
 
-        start_x = self.width - (4 * spacing) - 50 - spacing  
+        self.panel_x = start_x - 15
+        self.panel_y = start_y - 15
+        self.panel_width = button_width + 30
+        self.panel_height = 0  
+        self.heading_font = pygame.font.Font(None, 22)
+        self.headings = [] 
         
-        # Title row position 
-        title_row_y = self.height - 145  
-        run_button_x = self.width - button_width - 200  
+        current_y = start_y
+        
+        # ALGORITHM SECTION
+        self.headings.append(("ALGORITHM", start_x, current_y))
+        current_y += 30
         
         self.buttons = {
-            'set_start': Button(start_x, row1_y, button_width, button_height, 'Set Start', (255, 200, 50)),  # Yellow
-            'clear': Button(start_x + spacing * 3, row1_y, button_width, button_height, 'Clear Grid', (231, 76, 60)),  # Red
-            'set_goal': Button(start_x, row2_y, button_width, button_height, 'Set Goal', (142, 68, 173)),  # Purple
-            'load_map': Button(start_x + spacing * 3, row2_y, button_width, button_height, 'Load Map', (52, 152, 219)),  # Sky Blue
-            'run': Button(run_button_x, title_row_y, button_width, button_height, 'RUN PATH', (46, 204, 113)),  # Green
+            'dijkstra': Button(start_x, current_y, button_width // 2 - 5, button_height, 'Dijkstra', (46, 204, 113)),
+            'astar': Button(start_x + button_width // 2 + 5, current_y, button_width // 2 - 5, button_height, 'A*', (46, 204, 113))
         }
+        current_y += button_height + section_spacing
         
-        # Location dropdowns
-        self.start_location_dropdown = LocationDropdown(start_x + spacing, row1_y, button_width, button_height, 
-                                                       location_names, default=0, color=(255, 200, 50))  # Yellow - Row 1
-        self.dest_location_dropdown = LocationDropdown(start_x + spacing, row2_y, button_width, button_height, 
-                                                      location_names, default=1, color=(142, 68, 173))  # Purple - Row 2
+        # CONTROLS SECTION
+        self.headings.append(("CONTROLS", start_x, current_y))
+        current_y += 30
         
-        # Obstacle/Building dropdown - Row 1
-        self.obstacle_dropdown = Dropdown(start_x + spacing * 2, row1_y, button_width, button_height, 
-                                         ['Building', 'Car'], default=0, color=(127, 140, 141))  # Gray
+        self.buttons['run'] = Button(start_x, current_y, button_width // 2 - 5, button_height, 'Run', (52, 152, 219))
+        self.buttons['clear'] = Button(start_x + button_width // 2 + 5, current_y, button_width // 2 - 5, button_height, 'Reset', (231, 76, 60))
+        current_y += button_height + section_spacing
         
-        # Algorithm dropdown - Row 2
-        self.algorithm_dropdown = Dropdown(start_x + spacing * 2, row2_y, button_width, button_height, 
-                                          ['Dijkstra', 'A* Algorithm'], default=1, color=(70, 130, 180))  # Blue
+        # EDIT GRID SECTION
+        self.headings.append(("EDIT GRID", start_x, current_y))
+        current_y += 30
         
-        # Building generation dropdown - Row 3 (new row below the existing buttons)
-        row3_y = 200
-        self.building_dropdown = Dropdown(start_x, row3_y, button_width, button_height, 
-                                         ['Random', 'Recursive'], default=0, color=(230, 126, 34))  # Orange
+        self.buttons['set_start'] = Button(start_x, current_y, button_width // 2 - 5, button_height, 'Start', (255, 200, 50))
+        self.buttons['set_goal'] = Button(start_x + button_width // 2 + 5, current_y, button_width // 2 - 5, button_height, 'Goal', (142, 68, 173))
+        current_y += button_height + 5
+        
+        self.obstacle_dropdown = Dropdown(start_x, current_y, button_width, button_height, 
+                                         ['Building', 'Car'], default=0, color=(127, 140, 141))
+        current_y += button_height + section_spacing
+        
+        # LOCATIONS SECTION
+        self.headings.append(("LOCATIONS", start_x, current_y))
+        current_y += 30
+        
+        self.start_location_dropdown = LocationDropdown(start_x, current_y, button_width, button_height, 
+                                                       location_names, default=0, color=(255, 200, 50))
+        current_y += button_height + 5
+        
+        self.dest_location_dropdown = LocationDropdown(start_x, current_y, button_width, button_height, 
+                                                      location_names, default=1, color=(142, 68, 173))
+        current_y += button_height + section_spacing
+        
+        # PRESETS SECTION
+        self.headings.append(("PRESETS", start_x, current_y))
+        current_y += 30
+        
+        self.building_dropdown = Dropdown(start_x, current_y, button_width, button_height, 
+                                         ['Random', 'Recursive'], default=0, color=(230, 126, 34))
+        current_y += button_height + 5
+        
+        self.buttons['load_map'] = Button(start_x, current_y, button_width, button_height, 'Load Map', (70, 130, 180))
+        current_y += button_height + 5
+        
+        self.selected_algorithm = 'a_star'  
+        self.panel_height = current_y - start_y + 15
+    
+    def draw_background(self, surface):
+        panel_surface = pygame.Surface((self.panel_width, self.panel_height), pygame.SRCALPHA)
+        pygame.draw.rect(panel_surface, (0, 0, 0, 160), panel_surface.get_rect(), border_radius=20)
+        surface.blit(panel_surface, (self.panel_x, self.panel_y))
+
+        for heading_text, heading_x, heading_y in self.headings:
+            heading_surface = self.heading_font.render(heading_text, True, (200, 200, 200))
+            surface.blit(heading_surface, (heading_x, heading_y))
     
     def draw(self, surface):
+        self.draw_background(surface)
+        
         for button in self.buttons.values():
             button.draw(surface)
         
-        # Drawing dropdowns
         dropdowns = [
             self.start_location_dropdown,
             self.dest_location_dropdown,
             self.obstacle_dropdown,
             self.building_dropdown,
-            self.algorithm_dropdown
         ]
         
         for dropdown in dropdowns:
@@ -342,22 +382,21 @@ class ButtonManager:
             visualizer.grid.set_goal(0, visualizer.rows - 3, visualizer.cols - 3)
             return True
 
-        if self.algorithm_dropdown.handle_click(pos):
-            
-            if self.algorithm_dropdown.selected == 0:
-                visualizer.algorithm = 'dijkstra'
-            else:
-                visualizer.algorithm = 'a_star'
-            return True
-
         for name, button in self.buttons.items():
             if button.rect.collidepoint(pos):
-                if name == 'set_start':
+                if name == 'dijkstra':
+                    self.selected_algorithm = 'dijkstra'
+                    visualizer.algorithm = 'dijkstra'
+                    print("Algorithm: Dijkstra")
+                elif name == 'astar':
+                    self.selected_algorithm = 'a_star'
+                    visualizer.algorithm = 'a_star'
+                    print("Algorithm: A*")
+                elif name == 'set_start':
                     visualizer.mode = 'start'
                 elif name == 'set_goal':
                     visualizer.mode = 'goal'
                 elif name == 'load_map':
-                    
                     visualizer.load_osm_map()
                 elif name == 'run':
                     visualizer.run_pathfinding()

@@ -10,13 +10,9 @@ class OSMMapLoader:
     DUBAI_LOCATIONS = {
         'Home': (25.2048, 55.2708),  
         'Dubai Mall': (25.1972, 55.2796),
-        'Burj Khalifa': (25.1972, 55.2744),
         'Dubai Marina': (25.0808, 55.1420),
-        'Palm Jumeirah': (25.1124, 55.1390),
-        'Gold Souk': (25.2698, 55.2971),
         'Dubai Creek': (25.2631, 55.3297),
-        'Mall of Emirates': (25.1183, 55.2007),
-        'JBR Beach': (25.0772, 55.1326)
+        'Mall of Emirates': (25.1183, 55.2007)
     }
     
     @staticmethod

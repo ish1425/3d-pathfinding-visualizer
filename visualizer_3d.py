@@ -72,6 +72,7 @@ class Pathfinding3DVisualizer:
         self.path = []
         self.explored_nodes = []
         self.metrics = {}
+        self.comparison_metrics = {}  
         self.visualizing = False
         self.step_by_step = False
         self.visualization_step = 0
@@ -233,7 +234,7 @@ class Pathfinding3DVisualizer:
         else:
             pygame.draw.polygon(self.screen, (255, 255, 255), corners)
         
-        # Only draw grid lines if OSM map is not loaded
+        
         if not self.osm_loaded:
             for col in range(self.cols + 1):
                 p1 = self.cart_to_iso(col, 0, 0)
@@ -260,7 +261,7 @@ class Pathfinding3DVisualizer:
                 pygame.draw.polygon(s, (*self.CYAN, 200), corners)
             self.screen.blit(s, (0, 0))
 
-        # Only draw grid lines if OSM map is not loaded
+        
         if not self.osm_loaded:
             for col in range(self.cols + 1):
                 p1 = self.cart_to_iso(col, 0, 0)
@@ -385,30 +386,86 @@ class Pathfinding3DVisualizer:
             iso_x, iso_y = self.cart_to_iso(col, row, z)
             self.vehicle.draw(self.screen, iso_x, iso_y - 5)
     
-    def draw_ui(self):
-        info_y = 110
-        if self.metrics:
-            info_texts = [
-                f"Nodes Explored: {self.metrics.get('nodes_explored', 0)}",
-                f"Path Length: {self.metrics.get('path_length', 0)}",
-                f"Time: {self.metrics.get('execution_time', 0):.4f}s",
-            ]
-            for i, text in enumerate(info_texts):
-                info_surface = self.small_font.render(text, True, self.ORANGE)
-                self.screen.blit(info_surface, (300, info_y + i * 25))
+    def draw_comparison_table(self):
+        table_x = 200
+        table_y = 120
+        table_width = 280
+        table_height = 140
         
-        location_y = info_y + 90
-        if self.osm_loaded:
-            loc_title = self.small_font.render("Route:", True, self.WHITE)
-            self.screen.blit(loc_title, (300, location_y))
+        # Background with border
+        bg_surface = pygame.Surface((table_width, table_height), pygame.SRCALPHA)
+        pygame.draw.rect(bg_surface, (20, 25, 35, 230), bg_surface.get_rect(), border_radius=10)
+        self.screen.blit(bg_surface, (table_x, table_y))
+        pygame.draw.rect(self.screen, (100, 181, 246), (table_x, table_y, table_width, table_height), 2, border_radius=10)
+        
+        title_font = pygame.font.Font(None, 22)
+        algo_name = "A* Algorithm" if self.algorithm == 'a_star' else "Dijkstra Algorithm"
+        title_text = title_font.render(algo_name, True, (100, 181, 246))
+        self.screen.blit(title_text, (table_x + 80, table_y + 10))
+        
+        
+        # Metrics display
+        data_y = table_y + 55
+        metric_font = pygame.font.Font(None, 18)
+        
+        metrics_data = [
+            ("Nodes Explored:", self.metrics.get('nodes_explored', 0)),
+            ("Path Length:", self.metrics.get('path_length', 0)),
+            ("Execution Time:", f"{self.metrics.get('execution_time', 0)*1000:.4f} ms")
+        ]
+        
+        for i, (label, value) in enumerate(metrics_data):
+            y_pos = data_y + i * 30
             
-            start_text = f"From: {self.selected_start_location}"
-            start_surface = self.small_font.render(start_text, True, self.GREEN)
-            self.screen.blit(start_surface, (300, location_y + 20))
+            # Label
+            label_text = metric_font.render(label, True, (200, 200, 200))
+            self.screen.blit(label_text, (table_x + 20, y_pos))
             
-            dest_text = f"To: {self.selected_end_location}"
-            dest_surface = self.small_font.render(dest_text, True, self.RED)
-            self.screen.blit(dest_surface, (300, location_y + 40))
+            # Value
+            value_text = metric_font.render(str(value), True, (46, 204, 113))
+            self.screen.blit(value_text, (table_x + 180, y_pos))
+    
+    def draw_route_info(self):
+        if not self.osm_loaded:
+            return
+        
+        # metrics table with 2 rows spacing (80px)
+        table_x = 200
+        table_y = 120 + 150 + 80  
+        table_width = 200
+        table_height = 110
+        
+        bg_surface = pygame.Surface((table_width, table_height), pygame.SRCALPHA)
+        pygame.draw.rect(bg_surface, (0, 0, 0, 180), bg_surface.get_rect(), border_radius=12)
+        self.screen.blit(bg_surface, (table_x, table_y))
+        
+        pygame.draw.rect(self.screen, (70, 130, 180), (table_x, table_y, table_width, table_height), 2, border_radius=12)
+        
+        # Title
+        title_font = pygame.font.Font(None, 24)
+        title_text = title_font.render("Route:", True, (200, 200, 200))
+        self.screen.blit(title_text, (table_x + 20, table_y + 15))
+        
+        # From location
+        label_font = pygame.font.Font(None, 18)
+        from_label = label_font.render("From:", True, (200, 200, 200))
+        self.screen.blit(from_label, (table_x + 20, table_y + 50))
+        
+        from_value = label_font.render(self.selected_start_location, True, (46, 204, 113))
+        self.screen.blit(from_value, (table_x + 75, table_y + 50))
+        
+        # To location
+        to_label = label_font.render("To:", True, (200, 200, 200))
+        self.screen.blit(to_label, (table_x + 20, table_y + 75))
+        
+        to_value = label_font.render(self.selected_end_location, True, (231, 76, 60))
+        self.screen.blit(to_value, (table_x + 75, table_y + 75))
+    
+    def draw_ui(self):
+        if self.metrics:
+            self.draw_comparison_table()
+        
+        self.draw_route_info()
         
         self.button_manager.draw(self.screen)
 
@@ -424,7 +481,7 @@ class Pathfinding3DVisualizer:
         pitch_surface = self.font.render(camera_pitch_text, True, self.WHITE)
         self.screen.blit(pitch_surface, (20, 780))
         
-        controls_text = "Right-Click+Drag: Rotate 3D | Mouse Wheel: Zoom"
+        controls_text = "Left-Click+Drag: Rotate 3D | Mouse Wheel: Zoom"
         controls_surface = self.small_font.render(controls_text, True, (150, 150, 150))
         self.screen.blit(controls_surface, (20, 810))
         
@@ -461,8 +518,10 @@ class Pathfinding3DVisualizer:
             if self.mode == 'start':
                 self.grid.set_start(0, row, col)  
                 self.vehicle.position = [0, row, col]
+                return True
             elif self.mode == 'goal':
-                self.grid.set_goal(0, row, col)  
+                self.grid.set_goal(0, row, col)
+                return True  
             elif self.mode == 'obstacle':
                 if self.obstacle_type == 'car':
                     self.grid.add_car(0, row, col)
@@ -471,10 +530,13 @@ class Pathfinding3DVisualizer:
                     building_height = min(4, self.height_levels)  
                     for level in range(building_height):
                         self.grid.add_obstacle(level, row, col)
+                return True
             elif self.mode == 'erase':
                 for level in range(self.height_levels):
                     self.grid.remove_obstacle(level, row, col)
                 self.grid.remove_obstacle(0, row, col)
+                return True
+        return False
     
     def run_pathfinding(self):
         if not self.grid.start or not self.grid.goal:
@@ -532,15 +594,17 @@ class Pathfinding3DVisualizer:
                 if event.type == pygame.QUIT:
                     running = False             
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 3:  
-                        self.is_dragging = True
-                        self.drag_start_pos = event.pos
-                        self.drag_button = 3
-                    elif event.button == 1:
+                    if event.button == 1:
+                        # Check if clicking on UI first
                         if not self.handle_button_click(event.pos):
-                            self.handle_grid_click(event.pos)              
+                            # If not on UI, check if on grid
+                            if not self.handle_grid_click(event.pos):
+                                # If not on grid either, start dragging
+                                self.is_dragging = True
+                                self.drag_start_pos = event.pos
+                                self.drag_button = 1            
                 elif event.type == pygame.MOUSEBUTTONUP:
-                    if event.button == 3:  
+                    if event.button == 1:
                         self.is_dragging = False
                         self.drag_start_pos = None
                         self.drag_button = None              
